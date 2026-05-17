@@ -12,10 +12,11 @@ function makeConfig(key?: string | null) {
 }
 
 describe("MCP server", () => {
-  it("exposes exactly the 5 expected tools", () => {
+  it("exposes the 6 expected tools (search/describe/wages/dashboard/get_data/health)", () => {
     const names = getToolDefinitions().map((t) => t.name);
     expect(names).toEqual([
       "search_datasets",
+      "describe_dataset",
       "real_wages",
       "economic_dashboard",
       "get_data",

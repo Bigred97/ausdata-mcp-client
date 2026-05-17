@@ -20,6 +20,7 @@ import {
   handleEconomicDashboard,
 } from "./economic-dashboard.js";
 import { getDataTool, handleGetData } from "./get-data.js";
+import { describeTool, handleDescribe } from "./describe.js";
 import { healthTool, handleHealth } from "./health.js";
 
 export type ToolHandler = (
@@ -40,6 +41,7 @@ export interface ToolRegistryEntry {
 
 export const TOOLS: ToolRegistryEntry[] = [
   { definition: searchDatasetsTool, handler: handleSearchDatasets },
+  { definition: describeTool, handler: handleDescribe },
   { definition: realWagesTool, handler: handleRealWages },
   { definition: economicDashboardTool, handler: handleEconomicDashboard },
   { definition: getDataTool, handler: handleGetData },
