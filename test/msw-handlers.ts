@@ -70,13 +70,15 @@ export const handlers = [
     });
   }),
 
-  http.post(`${API_URL}/v1/get-data`, async ({ request }) => {
+  http.get(`${API_URL}/v1/data/:source/:datasetId`, ({ request, params }) => {
     const auth = requireAuth(request.headers.get("authorization"));
     if (auth) return auth;
-    const body = (await request.json()) as { dataset_id: string };
     return HttpResponse.json({
-      data: [{ period: "2024-12", value: 4.1 }],
-      meta: { endpoint: "/get-data", query: body, row_count: 1 },
+      data: [{ period: "2024-12", value: 4.1, unit: "Percent" }],
+      meta: {
+        endpoint: `/v1/data/${params.source}/${params.datasetId}`,
+        row_count: 1,
+      },
     });
   }),
 

@@ -4,8 +4,8 @@
  * AUSDATA_API_KEY  - required for any tool that hits the API. Missing key
  *                    surfaces a clear MCP error to the agent rather than a
  *                    runtime crash.
- * AUSDATA_API_URL  - override the base URL (default: https://api.ausdata.io).
- *                    Tests inject this to point at msw fixtures.
+ * AUSDATA_BASE_URL - override the base URL (default: https://ausdata-api.fly.dev).
+ *                    AUSDATA_API_URL accepted as an alias for backwards compat.
  * AUSDATA_TIMEOUT  - per-request timeout in ms (default: 30000).
  */
 export interface Config {
@@ -16,11 +16,14 @@ export interface Config {
 }
 
 export const SERVER_VERSION = "0.1.0";
+export const DEFAULT_API_URL = "https://ausdata-api.fly.dev";
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
+  const urlFromEnv =
+    env.AUSDATA_BASE_URL?.trim() || env.AUSDATA_API_URL?.trim() || "";
   return {
     apiKey: env.AUSDATA_API_KEY?.trim() || undefined,
-    apiUrl: (env.AUSDATA_API_URL?.trim() || "https://api.ausdata.io").replace(/\/+$/, ""),
+    apiUrl: (urlFromEnv || DEFAULT_API_URL).replace(/\/+$/, ""),
     timeoutMs: Number.parseInt(env.AUSDATA_TIMEOUT ?? "30000", 10) || 30000,
     serverVersion: SERVER_VERSION,
   };

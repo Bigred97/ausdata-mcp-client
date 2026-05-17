@@ -30,11 +30,11 @@ describe("get_data tool", () => {
     expect(result).toHaveProperty("isError", true);
   });
 
-  it("passes filters as POST body", async () => {
-    let received: unknown = null;
+  it("forwards filters as query params on /v1/data/{source}/{id}", async () => {
+    let receivedUrl = "";
     mswServer.use(
-      http.post(`${API_URL}/v1/get-data`, async ({ request }) => {
-        received = await request.json();
+      http.get(`${API_URL}/v1/data/:source/:datasetId`, ({ request }) => {
+        receivedUrl = request.url;
         return HttpResponse.json({ data: [], meta: {} });
       }),
     );
@@ -42,15 +42,13 @@ describe("get_data tool", () => {
       dataset_id: "rba.F1.1",
       filters: { series: "FIRMMCRT" },
     });
-    expect(received).toMatchObject({
-      dataset_id: "rba.F1.1",
-      filters: { series: "FIRMMCRT" },
-    });
+    expect(receivedUrl).toContain("/v1/data/rba/F1.1");
+    expect(receivedUrl).toContain("series=FIRMMCRT");
   });
 
   it("handles tier-blocked 403 with upgrade hint", async () => {
     mswServer.use(
-      http.post(`${API_URL}/v1/get-data`, () => {
+      http.get(`${API_URL}/v1/data/:source/:datasetId`, () => {
         return HttpResponse.json(
           { error: "this dataset requires Pro tier" },
           { status: 403 },
@@ -62,5 +60,12 @@ describe("get_data tool", () => {
     const text = (result as { content: { text: string }[] }).content[0].text;
     expect(text).toContain("Access denied");
     expect(text).toContain("Pro tier");
+  });
+
+  it("rejects unprefixed dataset_id with helpful hint", async () => {
+    const result = await handleGetData(client(), { dataset_id: "LF" });
+    expect(result).toHaveProperty("isError", true);
+    const text = (result as { content: { text: string }[] }).content[0].text;
+    expect(text).toMatch(/source-prefixed/i);
   });
 });
