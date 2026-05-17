@@ -27,11 +27,13 @@ If you find yourself reading from `/Users/harry/Desktop/MCP Endpoint Creation/au
 src/
 ├── index.ts        main() entry point
 ├── server.ts       MCP Server bootstrap (stdio transport)
-├── client.ts       HTTP client → api.ausdata.io
+├── client.ts       HTTP client → ausdata-api.fly.dev (override via AUSDATA_BASE_URL)
 ├── config.ts       env var loading
 ├── tools/          one file per MCP tool
-│   ├── index.ts    registry — exactly 5 entries
+│   ├── index.ts    registry — 7 entries
 │   ├── search-datasets.ts
+│   ├── list-datasets.ts
+│   ├── describe.ts
 │   ├── real-wages.ts
 │   ├── economic-dashboard.ts
 │   ├── get-data.ts
@@ -43,17 +45,24 @@ src/
 
 The tool registry in `src/tools/index.ts` is the source of truth. Adding a tool = a new file + a registry entry. Removing a tool = delete the file + the registry entry. The server iterates the registry; it doesn't hard-code anything.
 
-## Tool surface (mandatory — exactly 5)
+## Tool surface
 
-| Name | Path on api.ausdata.io |
+The 7 tools cover the portfolio's mandatory 5-tool core surface (search,
+list, describe, get_data, latest) plus 2 composed flagships (real_wages,
+economic_dashboard) and health. `latest` is folded into `get_data` (no
+period filter = latest).
+
+| Name | Path on the API |
 |---|---|
 | `search_datasets` | `GET /v1/search-datasets` |
+| `list_datasets` | `GET /v1/datasets/{source}` |
+| `describe_dataset` | `GET /v1/describe/{source}/{dataset_id}` |
 | `real_wages` | `GET /v1/real-wages` |
 | `economic_dashboard` | `GET /v1/economic-dashboard` |
-| `get_data` | `POST /v1/get-data` |
+| `get_data` | `GET /v1/data/{source}/{dataset_id}` |
 | `health` | `GET /v1/health` |
 
-Adding tools beyond these 5 is an anti-pattern (see below). Coordinate via the REST API team — new endpoints get a new tool only after the REST endpoint ships and stabilizes.
+New endpoints get a new tool only after the REST endpoint ships and stabilizes — keep this registry in sync with the API's actual surface.
 
 ## Test patterns
 
@@ -78,7 +87,7 @@ Adding tools beyond these 5 is an anti-pattern (see below). Coordinate via the R
 
 - **Don't import from the private `ausdata-mcp` Python bundle.** They are separate products. The TypeScript client routes HTTP; the Python bundle imports sisters directly.
 - **Don't reimplement parsing or shaping.** The REST API owns response shape. This client passes JSON through.
-- **Don't add tools beyond the 5 specified.** New tools require a new REST endpoint first, then a coordinated update here. The 5-tool surface is the contract.
+- **Don't add tools without a corresponding REST endpoint.** Each tool must wrap one stable API path. Adding a tool means: (1) the REST endpoint ships and stabilises on ausdata-api first, (2) a new tool file + registry entry here, (3) the tool-count assertions in `test/server.test.ts` and `test/stdio.test.ts` are bumped in the same commit. Don't drift past the API's actual surface.
 - **Don't add a CLI surface.** That's `@ausdata/cli` — a separate package.
 - **Don't auto-publish to npm.** Releases go through a manual `npm publish --access public` once tests + lint + build are all green and the user is ready.
 - **Don't echo tokens** in logs, errors, or test fixtures. The `Authorization` header is the only place an API key should appear.
