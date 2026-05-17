@@ -1,5 +1,5 @@
 {
-  "name": "@ausdata/mcp",
+  "name": "ausdata-mcp",
   "version": "0.2.0",
   "description": "MCP server for the Australian public data API. For Claude Code, Cursor, Windsurf, and other MCP clients.",
   "author": "Harry Vass",

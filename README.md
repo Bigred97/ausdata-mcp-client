@@ -1,4 +1,4 @@
-# @ausdata/mcp
+# ausdata-mcp
 
 MCP server for the Australian public data API. Plug into Claude Code, Cursor, Windsurf, or any other MCP client and get one-call access to 60+ curated Australian government datasets.
 
@@ -11,7 +11,7 @@ Add to your MCP client config:
   "mcpServers": {
     "ausdata": {
       "command": "npx",
-      "args": ["-y", "@ausdata/mcp"],
+      "args": ["-y", "ausdata-mcp"],
       "env": {
         "AUSDATA_API_KEY": "ak_xxx"
       }

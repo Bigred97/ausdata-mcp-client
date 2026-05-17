@@ -1,4 +1,4 @@
-# @ausdata/mcp — TypeScript MCP client
+# ausdata-mcp — TypeScript MCP client
 
 One-line value prop: **public MCP server that routes AI-agent tool calls to the hosted ausdata.io REST API.**
 
@@ -11,13 +11,13 @@ This repo is **NOT** the private bundle. There are two related packages and they
 | Package | Language | Distribution | Purpose |
 |---|---|---|---|
 | `ausdata-mcp` (Python, **private**) | Python / FastMCP | Internal only — DO NOT PUBLISH | Direct sister-MCP imports, commercial moat, sold as enterprise self-host |
-| `@ausdata/mcp` (TypeScript, **THIS REPO**) | TypeScript / MCP SDK | Public npm under `@ausdata` org | Routes to hosted API; free entry-point for AI agent devs |
+| `ausdata-mcp` (TypeScript, **THIS REPO**) | TypeScript / MCP SDK | Public npm under `@ausdata` org | Routes to hosted API; free entry-point for AI agent devs |
 
 If you find yourself reading from `/Users/harry/Desktop/MCP Endpoint Creation/ausdata-mcp/`, you are in the WRONG repo for this work. The private bundle lives there. This repo (`ausdata-mcp-client/`) is the public TypeScript client.
 
 ## TypeScript + MCP SDK rationale
 
-- TypeScript matches the audience: Claude Code / Cursor / Windsurf devs already have node + npm. `npx @ausdata/mcp` is friction-free.
+- TypeScript matches the audience: Claude Code / Cursor / Windsurf devs already have node + npm. `npx ausdata-mcp` is friction-free.
 - The `@modelcontextprotocol/sdk` TS implementation is the reference client; stays compatible with all transports.
 - HTTP routing only — zero parsing — keeps this client trivial to maintain. New endpoints in the REST API need a new tool file, that's it.
 
@@ -88,7 +88,7 @@ New endpoints get a new tool only after the REST endpoint ships and stabilizes �
 - **Don't import from the private `ausdata-mcp` Python bundle.** They are separate products. The TypeScript client routes HTTP; the Python bundle imports sisters directly.
 - **Don't reimplement parsing or shaping.** The REST API owns response shape. This client passes JSON through.
 - **Don't add tools without a corresponding REST endpoint.** Each tool must wrap one stable API path. Adding a tool means: (1) the REST endpoint ships and stabilises on ausdata-api first, (2) a new tool file + registry entry here, (3) the tool-count assertions in `test/server.test.ts` and `test/stdio.test.ts` are bumped in the same commit. Don't drift past the API's actual surface.
-- **Don't add a CLI surface.** That's `@ausdata/cli` — a separate package.
+- **Don't add a CLI surface.** That's `ausdata-cli` — a separate package.
 - **Don't auto-publish to npm.** Releases go through a manual `npm publish --access public` once tests + lint + build are all green and the user is ready.
 - **Don't echo tokens** in logs, errors, or test fixtures. The `Authorization` header is the only place an API key should appear.
 
