@@ -58,7 +58,7 @@ async function rpc(messages: object[]): Promise<JsonRpcResponse[]> {
 }
 
 describe("stdio transport", () => {
-  it("responds to initialize + tools/list with 6 tools", async () => {
+  it("responds to initialize + tools/list with 7 tools", async () => {
     const responses = await rpc([
       {
         jsonrpc: "2.0",
@@ -84,6 +84,7 @@ describe("stdio transport", () => {
     const tools = (list?.result as { tools: { name: string }[] }).tools;
     expect(tools.map((t) => t.name)).toEqual([
       "search_datasets",
+      "list_datasets",
       "describe_dataset",
       "real_wages",
       "economic_dashboard",
