@@ -12,7 +12,7 @@ function makeConfig(key?: string | null) {
 }
 
 describe("MCP server", () => {
-  it("exposes the 7 expected tools (search/list/describe/wages/dashboard/get_data/health)", () => {
+  it("exposes the 28 expected tools (7 core + 8 Wave 1 + 13 Wave 2)", () => {
     const names = getToolDefinitions().map((t) => t.name);
     expect(names).toEqual([
       "search_datasets",
@@ -22,6 +22,27 @@ describe("MCP server", () => {
       "economic_dashboard",
       "get_data",
       "health",
+      "real_cash_rate",
+      "gender_pay_context",
+      "energy_snapshot",
+      "cost_of_living",
+      "youth_unemployment",
+      "trade_balance",
+      "housing_affordability",
+      "releases",
+      "real_mortgage_rate",
+      "real_savings_rate",
+      "regional_cost_of_living",
+      "wage_vs_rent_gap",
+      "super_fund_real_return",
+      "sectoral_employment_shift",
+      "bank_deposit_share",
+      "charity_sector_health",
+      "state_fiscal_snapshot",
+      "inflation_decomposition",
+      "release_pulse",
+      "macro_snapshot_state",
+      "nem_dispatch_5min",
     ]);
   });
 
@@ -62,7 +83,9 @@ describe("MCP server", () => {
 
   it("each tool name follows snake_case verb_noun convention", () => {
     for (const tool of getToolDefinitions()) {
-      expect(tool.name).toMatch(/^[a-z][a-z_]+$/);
+      // snake_case: lowercase letters + digits + underscores, must start with a letter.
+      // Digits permitted to match REST surface (e.g. `nem_dispatch_5min` ↔ `/v1/nem-dispatch-5min`).
+      expect(tool.name).toMatch(/^[a-z][a-z0-9_]+$/);
     }
   });
 });

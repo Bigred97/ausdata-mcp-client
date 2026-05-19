@@ -58,7 +58,7 @@ async function rpc(messages: object[]): Promise<JsonRpcResponse[]> {
 }
 
 describe("stdio transport", () => {
-  it("responds to initialize + tools/list with 7 tools", async () => {
+  it("responds to initialize + tools/list with 28 tools", async () => {
     const responses = await rpc([
       {
         jsonrpc: "2.0",
@@ -90,6 +90,27 @@ describe("stdio transport", () => {
       "economic_dashboard",
       "get_data",
       "health",
+      "real_cash_rate",
+      "gender_pay_context",
+      "energy_snapshot",
+      "cost_of_living",
+      "youth_unemployment",
+      "trade_balance",
+      "housing_affordability",
+      "releases",
+      "real_mortgage_rate",
+      "real_savings_rate",
+      "regional_cost_of_living",
+      "wage_vs_rent_gap",
+      "super_fund_real_return",
+      "sectoral_employment_shift",
+      "bank_deposit_share",
+      "charity_sector_health",
+      "state_fiscal_snapshot",
+      "inflation_decomposition",
+      "release_pulse",
+      "macro_snapshot_state",
+      "nem_dispatch_5min",
     ]);
   }, 10000);
 

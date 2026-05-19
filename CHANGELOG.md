@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.4.0] — 2026-05-19
+
+### Added (Wave 4 P0 — MCP/REST surface drift fix)
+
+- 13 new MCP tools wrapping the Wave 2 composer surface that shipped on
+  ausdata-api over the past two weeks. Closes the surface-drift gap
+  found in the Wave 4 retest: REST had 42 paths, MCP exposed only 15.
+  AI agents (Claude Desktop, Cursor, Continue, Windsurf) can now reach
+  the full composer surface without falling back to raw HTTP:
+  - `real_mortgage_rate` — `GET /v1/real-mortgage-rate` (RBA mortgage rate − CPI)
+  - `real_savings_rate` — `GET /v1/real-savings-rate` (RBA deposit rate − CPI)
+  - `regional_cost_of_living` — `GET /v1/regional-cost-of-living` (capital-city CPI)
+  - `wage_vs_rent_gap` — `GET /v1/wage-vs-rent-gap` (WPI vs rent CPI)
+  - `super_fund_real_return` — `GET /v1/super-fund-real-return` (APRA + CPI)
+  - `sectoral_employment_shift` — `GET /v1/sectoral-employment-shift` (LF Detailed by ANZSIC)
+  - `bank_deposit_share` — `GET /v1/bank-deposit-share` (APRA ADI deposit shares)
+  - `charity_sector_health` — `GET /v1/charity-sector-health` (ACNC aggregates)
+  - `state_fiscal_snapshot` — `GET /v1/state-fiscal-snapshot?state=...` (ABS GFS)
+  - `inflation_decomposition` — `GET /v1/inflation-decomposition` (CPI contributors)
+  - `release_pulse` — `GET /v1/release-pulse?days_ahead=...` (ranked release calendar)
+  - `macro_snapshot_state` — `GET /v1/macro-snapshot-state?state=...` (state macro)
+  - `nem_dispatch_5min` — `GET /v1/nem-dispatch-5min?region=...&limit=...` (AEMO 5min)
+- Tool count: 15 → 28.
+
 ## [0.3.3] — 2026-05-19
 
 ### Fixed (customer-fit audit 2026-05-19, Bug 8)
