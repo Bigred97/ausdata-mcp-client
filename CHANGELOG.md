@@ -1,5 +1,40 @@
 # Changelog
 
+## [0.3.3] — 2026-05-19
+
+### Fixed (customer-fit audit 2026-05-19, Bug 8)
+
+- **5xx errors now surface the upstream detail.** Previously every 5xx
+  mapped to a generic "ausdata.io is having trouble, try again in a
+  moment" — stripping the actionable hint the REST API provides
+  ("Retry in ~11s when the circuit breaker probes upstream again",
+  "Hint: retry once after cold deploy"). LLM agents saw no signal to
+  recover from. The MCP error now includes `HTTP {status}: {detail}`
+  when the API returned a structured error body.
+- **Single auto-retry on 5xx and timeout.** Hosted API cold-deploy
+  paths briefly return 503-with-stale or 504; a single retry after
+  800ms usually hits a warm cache. Two max attempts → max latency is
+  2 × `AUSDATA_TIMEOUT` (default 30s × 2 = 60s), still under the
+  typical LLM agent tool-call budget. Eliminates the
+  `economic_dashboard` / `get_data` regressions reported by the
+  builders persona (`isError: true` on calls that succeed via REST
+  in 2.7-8s).
+
+## [0.3.2] — 2026-05-19
+
+### Fixed (Round-17 P2)
+
+- **`get_data` now surfaces a `meta.client_hint` when auto-prefixing a bare
+  dataset_id.** Round-17 audit found that LLM agents repeatedly passed
+  `source='abs', dataset_id='RES_DWELL_ST'` (bare) on the first try because
+  every model's pretrained data assumes split form. The call already
+  succeeded thanks to 0.3.1 — but the agent had no signal that the canonical
+  form is `abs.RES_DWELL_ST`. Now the augmented response includes
+  `meta.client_hint = "Auto-prefixed 'RES_DWELL_ST' to 'abs.RES_DWELL_ST'..."`
+  so the agent can learn the dotted form for the next call without a
+  separate help round-trip. Two new vitest cases cover the hint shape and
+  its absence when dotted form is used.
+
 ## [0.3.1] — 2026-05-19
 
 ### Fixed (Round-11 P2)

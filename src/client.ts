@@ -26,6 +26,32 @@ export class AusdataClient {
     if (!this.config.apiKey) {
       throw new MissingApiKeyError();
     }
+    // 0.3.3 (customer-fit audit, 2026-05-19): retry once on 5xx and on
+    // network timeout. The hosted API's cold-deploy path can briefly
+    // return 503-with-stale or 504; a single retry usually hits a now-
+    // warm sister cache. LLM agents previously saw the "having trouble"
+    // generic error on the first call and gave up. Total max latency =
+    // 2 × timeoutMs (default 30s) so still well under the LLM agent's
+    // typical 60s tool call budget.
+    let lastErr: unknown;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        return await this._requestOnce<T>(opts);
+      } catch (err) {
+        lastErr = err;
+        const shouldRetry =
+          err instanceof ApiError && (err.status >= 500 || err.status === 504);
+        if (!shouldRetry) throw err;
+        // Brief pause before retry to let the upstream warm up. 800ms
+        // is enough for circuit-breaker probes / cold-cache parses to
+        // start serving the now-cached payload.
+        await new Promise((r) => setTimeout(r, 800));
+      }
+    }
+    throw lastErr;
+  }
+
+  private async _requestOnce<T = unknown>(opts: RequestOptions): Promise<T> {
     const url = this.buildUrl(opts.path, opts.query);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs);

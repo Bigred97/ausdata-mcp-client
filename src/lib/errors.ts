@@ -76,8 +76,19 @@ export function toMcpError(err: unknown): McpErrorResponse {
       );
     }
     if (err.status >= 500) {
+      // Surface the upstream detail when present — the REST API returns
+      // actionable hints like "Retry in ~11s when the circuit breaker
+      // probes upstream again" that an LLM agent can recover from.
+      // A generic "having trouble" message strips that signal and was
+      // the customer-fit audit's top P0 for the MCP client (2026-05-19).
+      const detail = extractMessage(err.body);
+      if (detail) {
+        return mcpError(
+          `ausdata.io upstream error (HTTP ${err.status}): ${detail}`,
+        );
+      }
       return mcpError(
-        "ausdata.io is having trouble, try again in a moment. Status: https://ausdata.io/status",
+        `ausdata.io is having trouble (HTTP ${err.status}). Status: https://ausdata.io/status`,
       );
     }
     if (err.status >= 400) {

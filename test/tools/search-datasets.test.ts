@@ -57,7 +57,11 @@ describe("search_datasets tool", () => {
     expect(text).toContain("30");
   });
 
-  it("returns server-trouble error on 5xx", async () => {
+  it("surfaces upstream detail on 5xx (0.3.3)", async () => {
+    // 0.3.3: 5xx errors now include the upstream detail rather than
+    // a generic "having trouble" message, so LLM agents can recover.
+    // The client now also retries once on 5xx, so both responses below
+    // need to be 5xx for the final error to bubble.
     mswServer.use(
       http.get(`${API_URL}/v1/search-datasets`, () => {
         return HttpResponse.json({ error: "down" }, { status: 503 });
@@ -66,6 +70,7 @@ describe("search_datasets tool", () => {
     const result = await handleSearchDatasets(client(), { q: "test" });
     expect(result).toHaveProperty("isError", true);
     const text = (result as { content: { text: string }[] }).content[0].text;
-    expect(text).toContain("trouble");
+    expect(text).toContain("HTTP 503");
+    expect(text).toContain("down");
   });
 });
