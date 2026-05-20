@@ -97,11 +97,24 @@ export const getDataTool = {
  *   3. dataset_id="abs.CPI_MONTHLY", source="abs"        → ("abs", "CPI_MONTHLY")
  *
  * Returns an Error if neither form yields a source.
+ *
+ * 0.3.2 (Bug 4 fix): every LLM consumer that called this tool initially
+ * passed `dataset_id="RES_DWELL_ST"` without a `source` because the
+ * REST docs show dotted IDs but the MCP tool description listed both
+ * shapes. We now emit a `hint` whenever auto-prefix occurred so the
+ * agent's response surface explains what happened. The hint is
+ * informational only — the call still succeeds.
  */
+export interface ResolvedDataset {
+  source: string;
+  datasetId: string;
+  hint?: string;
+}
+
 export function resolveSourceAndId(
   datasetId: string,
   source?: string,
-): { source: string; datasetId: string } | Error {
+): ResolvedDataset | Error {
   const dot = datasetId.indexOf(".");
   if (dot > 0) {
     // Dotted form. If `source` was also passed, the dotted prefix wins
@@ -113,7 +126,12 @@ export function resolveSourceAndId(
     };
   }
   if (source && source.trim()) {
-    return { source: source.trim().toLowerCase(), datasetId };
+    const resolvedSource = source.trim().toLowerCase();
+    return {
+      source: resolvedSource,
+      datasetId,
+      hint: `Auto-prefixed '${datasetId}' to '${resolvedSource}.${datasetId}'. Both forms are accepted — dotted ('${resolvedSource}.${datasetId}') and split (source + bare dataset_id).`,
+    };
   }
   return new Error(
     `Specify \`source\` (one of ${VALID_SOURCES.join("/")}) OR use dotted form like 'abs.${datasetId}'. Got dataset_id='${datasetId}' with no source.`,
@@ -130,7 +148,7 @@ export async function handleGetData(
     if (resolved instanceof Error) {
       return toMcpError(resolved);
     }
-    const { source, datasetId } = resolved;
+    const { source, datasetId, hint } = resolved;
 
     const query: Record<string, string | number | undefined> = {
       limit: input.limit,
@@ -150,6 +168,23 @@ export async function handleGetData(
       path: `/v1/data/${encodeURIComponent(source)}/${encodeURIComponent(datasetId)}`,
       query,
     });
+
+    // 0.3.2 (Bug 4 fix): when we auto-prefixed a bare dataset_id (e.g.
+    // `RES_DWELL_ST` → `abs.RES_DWELL_ST` given `source=abs`), surface the
+    // resolution to the agent via a `client_hint` field on the response.
+    // This is additive — existing consumers that ignore unknown fields keep
+    // working; new consumers can prompt-engineer around the canonical form.
+    if (hint && typeof data === "object" && data !== null) {
+      const augmented: Record<string, unknown> = { ...(data as Record<string, unknown>) };
+      const meta = augmented.meta;
+      if (meta && typeof meta === "object" && !Array.isArray(meta)) {
+        augmented.meta = { ...(meta as Record<string, unknown>), client_hint: hint };
+      } else {
+        augmented.client_hint = hint;
+      }
+      return mcpJson(augmented);
+    }
+
     return mcpJson(data);
   } catch (err) {
     return toMcpError(err);

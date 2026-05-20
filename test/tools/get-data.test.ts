@@ -117,6 +117,43 @@ describe("get_data tool", () => {
     expect(receivedUrl).toContain("/v1/data/abs/CPI_MONTHLY");
   });
 
+  it("emits a client_hint when auto-prefixing a bare dataset_id (0.3.2)", async () => {
+    // 0.3.2 (Bug 4): when an agent passes `source='abs', dataset_id='RES_DWELL_ST'`,
+    // the call still succeeds — but the response augments meta.client_hint so
+    // the agent learns the canonical dotted form for next time.
+    mswServer.use(
+      http.get(`${API_URL}/v1/data/:source/:datasetId`, () => {
+        return HttpResponse.json({ data: [{ x: 1 }], meta: { row_count: 1 } });
+      }),
+    );
+    const result = await handleGetData(client(), {
+      dataset_id: "RES_DWELL_ST",
+      source: "abs",
+    });
+    expect(result).toHaveProperty("content");
+    const parsed = JSON.parse(
+      (result as { content: { text: string }[] }).content[0].text,
+    );
+    expect(parsed.meta.client_hint).toBeDefined();
+    expect(parsed.meta.client_hint).toMatch(/RES_DWELL_ST/);
+    expect(parsed.meta.client_hint).toMatch(/abs\.RES_DWELL_ST/);
+  });
+
+  it("does NOT emit a client_hint when dataset_id is already dotted", async () => {
+    mswServer.use(
+      http.get(`${API_URL}/v1/data/:source/:datasetId`, () => {
+        return HttpResponse.json({ data: [], meta: {} });
+      }),
+    );
+    const result = await handleGetData(client(), {
+      dataset_id: "abs.CPI_MONTHLY",
+    });
+    const parsed = JSON.parse(
+      (result as { content: { text: string }[] }).content[0].text,
+    );
+    expect(parsed.meta.client_hint).toBeUndefined();
+  });
+
   it("normalises source casing", async () => {
     let receivedUrl = "";
     mswServer.use(

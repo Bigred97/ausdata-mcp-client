@@ -27,7 +27,7 @@ If you find yourself reading from `/Users/harry/Desktop/MCP Endpoint Creation/au
 src/
 ├── index.ts        main() entry point
 ├── server.ts       MCP Server bootstrap (stdio transport)
-├── client.ts       HTTP client → ausdata-api.fly.dev (override via AUSDATA_BASE_URL)
+├── client.ts       HTTP client → api.ausdata.io (override via AUSDATA_BASE_URL)
 ├── config.ts       env var loading
 ├── tools/          one file per MCP tool
 │   ├── index.ts    registry — 7 entries

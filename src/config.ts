@@ -15,7 +15,7 @@ export interface Config {
   serverVersion: string;
 }
 
-export const SERVER_VERSION = "0.2.0";
+export const SERVER_VERSION = "0.3.0";
 export const DEFAULT_API_URL = "https://api.ausdata.io";
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
