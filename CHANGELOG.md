@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.2] — 2026-05-21
+
+### Added
+
+- Add `mcpName: io.ausdata/ausdata-mcp` field to package.json (required by the
+  MCP Registry npm package-ownership validator).
+
+## [0.4.1] — 2026-05-21
+
+### Added
+
+- Add MCP Registry ownership marker (`mcp-name: io.ausdata/ausdata-mcp`) to the
+  README so the server can be listed under the verified `io.ausdata` namespace.
+
 ## [0.4.0] — 2026-05-19
 
 ### Added (Wave 4 P0 — MCP/REST surface drift fix)

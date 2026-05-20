@@ -1,6 +1,7 @@
 {
   "name": "ausdata-mcp",
-  "version": "0.4.1",
+  "version": "0.4.2",
+  "mcpName": "io.ausdata/ausdata-mcp",
   "description": "MCP server for the Australian public data API. For Claude Code, Cursor, Windsurf, and other MCP clients.",
   "author": "Harry Vass",
   "license": "MIT",
