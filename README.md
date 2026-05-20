@@ -1,5 +1,7 @@
 # ausdata-mcp
 
+mcp-name: io.ausdata/ausdata-mcp
+
 MCP server for the Australian public data API. Plug into Claude Code, Cursor, Windsurf, or any other MCP client and get one-call access to 100+ curated Australian government datasets across 9 sources.
 
 ## Install
